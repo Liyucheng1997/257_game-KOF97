@@ -1,0 +1,17 @@
+# 依赖 / 构建产物（本项目无需构建，留着以防后续加工具链）
+node_modules/
+dist/
+build/
+
+# 玩家自备的精灵图素材，不入库
+assets/*.png
+assets/*.jpg
+assets/*.webp
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+desktop.ini
+.DS_Store
