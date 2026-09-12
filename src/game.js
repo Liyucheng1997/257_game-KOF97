@@ -39,13 +39,17 @@ export class Game {
     this.round = 1;
     this.timer = ROUND_TIME;
     this.showBoxes = false;
+    this.paused = false;
+    this.stageChoice = 0;
+    this.trainingGuard = 'stand';
+    this.trainingIdle = 0;
     this.mode = 'cpu';           // cpu | vs | training
     this.aiLevel = 3;
     this.fighters = [];
     this.ai = null;
     this.sel = { cursor: [0, 1], locked: [false, false], t: 0, mode: 0 };
     this.slowmo = 0;
-    this.assets.load();
+    this.ready = this.assets.load();
   }
 
   // ═════════ 对局初始化 ═════════
@@ -56,10 +60,11 @@ export class Game {
     this.pads[0].aiControlled = false;
     this.pads[1].aiControlled = this.mode !== 'vs';
     this.ai = this.mode === 'vs' ? null : new AI(this.fighters[1], this.pads[1], this.mode === 'training' ? 1 : this.aiLevel);
-    if (this.mode === 'training') this.ai.cfg = { ...this.ai.cfg, aggr: .12, spRate: .004, dmRate: 0 };
+    this.paused = false;
+    this.trainingIdle = 0;
     this.wins = [0, 0];
     this.round = 1;
-    this.stage = new Stage(rndi(0, 2));
+    this.stage = new Stage(this.stageChoice);
     this.startRound();
     this.audio.startBGM();
   }
@@ -69,6 +74,10 @@ export class Game {
     a.resetRound(STAGE_W / 2 - 52, 1);
     b.resetRound(STAGE_W / 2 + 52, -1);
     if (this.round === 1) { a.power = b.power = 0; a.stock = b.stock = 0; }
+    this.freeze = this.slowmo = this.superFlash = this.hitFlash = 0;
+    for (const pad of this.pads) { pad.clearHist(); pad.btn = pad.press = pad.release = 0; }
+    if (this.ai) { this.ai.queue = []; this.ai.cur = null; }
+    if (this.mode === 'training') { a.stock = b.stock = 3; }
     this.projectiles.length = 0;
     this.fx.clear();
     this.hud.reset();
@@ -89,6 +98,7 @@ export class Game {
 
     if (this.phase === 'select') { this.updateSelect(); endFrameGlobal(); return; }
 
+    if (this.paused) { endFrameGlobal(); return; }
     this.frame++;
     if (this.banner) { if (++this.banner.t >= this.banner.life) this.banner = null; }
     if (this.hitFlash > 0) this.hitFlash--;
@@ -115,7 +125,8 @@ export class Game {
     }
 
     if (this.phase === 'fight') {
-      if (this.timer > 0) this.timer--;
+      if (this.mode === 'training') this.timer = ROUND_TIME;
+      else if (this.timer > 0) this.timer--;
       else this.onTimeOver();
     }
 
@@ -134,13 +145,22 @@ export class Game {
     this.postPhysics();
     this.resolveHits();
     this.updateRush();
+    if (this.mode === 'training' && this.phase === 'fight') {
+      for (const f of this.fighters) f.stock = 3;
+      const busy = this.fighters.some(f => f.move || ['hit','down','thrown','blockstun'].includes(f.state) || !f.grounded);
+      this.trainingIdle = busy ? 0 : this.trainingIdle + 1;
+      if (this.trainingIdle >= 90) for (const f of this.fighters) { f.hp = MAX_HP; f.stunPoints = 0; f.dizzy = 0; }
+    }
     this.updateCamera();
     this.fx.update();
     endFrameGlobal();
   }
 
   samplePads(frozen) {
-    if (this.ai && !frozen && this.phase === 'fight') this.ai.update(this);
+    if (this.mode === 'training' && this.ai) {
+      this.pads[1].aiBtn = 0;
+      this.pads[1].aiDir = this.trainingGuard === 'guard' ? (this.fighters[0].move?.hits.some(h => h.lvl === LV.LOW) ? 1 : 4) : this.trainingGuard === 'crouch' ? 2 : 5;
+    } else if (this.ai && !frozen && this.phase === 'fight') this.ai.update(this);
     else if (this.ai) { this.pads[1].aiDir = 5; this.pads[1].aiBtn = 0; }
     for (let i = 0; i < 2; i++) {
       const f = this.fighters[i];
@@ -356,6 +376,7 @@ export class Game {
   onStockGain(f) { this.audio.play('stock'); }
 
   onKO(loser, winner, h) {
+    if (this.mode === 'training') { loser.hp = MAX_HP; loser.stunPoints = 0; return; }
     if (this.phase !== 'fight') return;
     loser.hp = 0;
     loser.setState('ko');
@@ -418,6 +439,8 @@ export class Game {
   updateSelect() {
     const s = this.sel;
     s.t++;
+    if (keyPressed('KeyQ')) this.stageChoice = (this.stageChoice + 2) % 3;
+    if (keyPressed('KeyE')) this.stageChoice = (this.stageChoice + 1) % 3;
     const p1 = this.pads[0];
     // 直接读键（选人界面不走 Pad 的朝向换算）
     const L = keyPressed('KeyA') || keyPressed('ArrowLeft');
@@ -465,7 +488,7 @@ export class Game {
     ctx.translate(Math.round(sx), Math.round(sy));
 
     const cam = Math.round(this.camX);
-    this.stage.draw(ctx, cam);
+    if (!this.assets.drawStage(ctx, this.stageChoice, cam)) this.stage.draw(ctx, cam);
 
     // 影子
     for (const f of this.fighters) drawShadow(ctx, f, cam, GROUND_Y);
@@ -666,6 +689,8 @@ export class Game {
       if (s.locked[0] && sel2) { ctx.fillStyle = '#4aa8ff'; ctx.font = 'bold 8px Arial'; ctx.fillText(this.mode === 'vs' ? '2P' : 'CPU', x + cw - 10, y - 10); }
     }
 
+    ctx.font = '7px monospace'; ctx.fillStyle = '#a8bfcb';
+    ctx.fillText('Q / E  STAGE: ' + ['NIGHT STREET', 'TEMPLE', 'HARBOR'][this.stageChoice], W / 2, 149);
     // 模式
     const modes = ['VS CPU  (普通)', 'VS CPU  (高手)', 'VS 2P   (双人对战)', 'TRAINING (训练模式)'];
     ctx.font = '9px "Microsoft YaHei", Arial'; ctx.textAlign = 'center';

@@ -21,12 +21,15 @@ const held = new Set();
 const edgeKeys = new Set();     // 本帧刚按下的键（供菜单使用）
 
 window.addEventListener('keydown', e => {
+  if (e.target?.closest?.('dialog[open],select,input,textarea')) return;
+  if (e.target?.closest?.('button') && ['Enter','Space'].includes(e.code)) return;
   if (!held.has(e.code)) edgeKeys.add(e.code);
   held.add(e.code);
   if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','Tab','F1','F2','F5'].includes(e.code)) e.preventDefault();
 });
 window.addEventListener('keyup',   e => held.delete(e.code));
-window.addEventListener('blur',    () => held.clear());
+export function clearInput() { held.clear(); edgeKeys.clear(); }
+window.addEventListener('blur', clearInput);
 
 export function keyPressed(code) { return edgeKeys.has(code); }
 export function keyHeld(code)    { return held.has(code); }
@@ -221,6 +224,9 @@ const D = {
   RDP:  [[4, 7], [2], [1, 4]],                       // 421
   HCF:  [[4], [1, 2], [2], [3, 2], [6, 3]],          // 41236
   HCB:  [[6], [3, 2], [2], [1, 2], [4, 1]],          // 63214
+  QCBHCF: [[2], [1], [4], [1, 2], [2, 3], [6]],
+  QCFHCB: [[2], [3], [6], [3, 2], [2, 1], [4]],
+  GEYSER: [[2], [1], [4], [1], [6]],
   QCFx2:[[2], [3, 6], [2, 5, 1], [2, 3], [6, 3]],    // 236236
   QCBx2:[[2], [1, 4], [2, 5, 3], [2, 1], [4, 1]],    // 214214
   DPx2: [[6, 3], [2], [3, 6], [6, 3], [2], [3, 6]],  // 623623
@@ -239,6 +245,9 @@ export function testMotion(pad, motion) {
     case 'RDP':   return pad.matchSeq(D.RDP, 20);
     case 'HCF':   return pad.matchSeq(D.HCF, 30, 6);
     case 'HCB':   return pad.matchSeq(D.HCB, 30, 6);
+    case 'QCBHCF': return pad.matchSeq(D.QCBHCF, 42, 8);
+    case 'QCFHCB': return pad.matchSeq(D.QCFHCB, 42, 8);
+    case 'GEYSER': return pad.matchSeq(D.GEYSER, 36, 6);
     case 'QCFx2': return pad.matchSeq(D.QCFx2, 40, 8);
     case 'QCBx2': return pad.matchSeq(D.QCBx2, 40, 8);
     case 'DPx2':  return pad.matchSeq(D.DPx2, 42, 8);

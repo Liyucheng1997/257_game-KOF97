@@ -5,6 +5,9 @@ import { rnd, rndi, pick, clamp } from './core.js';
 
 // 指令脚本片段：{d:方向, b:按键, f:持续帧}
 const S = {
+  QCBHCF: b => motionScript([2, 1, 4, 1, 2, 3, 6], b),
+  QCFHCB: b => motionScript([2, 3, 6, 3, 2, 1, 4], b),
+  GEYSER: b => motionScript([2, 1, 4, 1, 6], b),
   QCF: b => [{ d: 2, f: 3 }, { d: 3, f: 3 }, { d: 6, f: 2 }, { d: 6, b, f: 3 }, { d: 5, f: 2 }],
   QCB: b => [{ d: 2, f: 3 }, { d: 1, f: 3 }, { d: 4, f: 2 }, { d: 4, b, f: 3 }, { d: 5, f: 2 }],
   DP:  b => [{ d: 6, f: 3 }, { d: 2, f: 3 }, { d: 3, f: 2 }, { d: 3, b, f: 3 }, { d: 5, f: 2 }],
@@ -22,6 +25,10 @@ const S = {
   roll: () => [{ d: 5, b: BTN.A | BTN.B, f: 3 }, { d: 5, f: 2 }],
   burst: () => [{ d: 5, b: BTN.A | BTN.B | BTN.C, f: 4 }, { d: 5, f: 2 }],
 };
+
+function motionScript(dirs, b) {
+  return [...dirs.map(d => ({ d, f: 2 })), { d: dirs.at(-1), b, f: 3 }, { d: 5, f: 2 }];
+}
 
 const LEVELS = {
   1: { react: 16, aggr: .28, spDist: 70, spRate: .010, dmRate: .006, guard: .45, aa: .30, punish: .25, tech: .15 },

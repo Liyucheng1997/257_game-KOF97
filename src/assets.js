@@ -21,6 +21,8 @@
 export class Assets {
   constructor() {
     this.chars = {};       // charId -> {img, scale, clips}
+    this.stages = {};
+    this.errors = [];
     this.loaded = false;
   }
 
@@ -35,17 +37,35 @@ export class Assets {
       return false;                 // 没有素材 —— 用程序化渲染
     }
     const jobs = [];
-    for (const id in manifest) {
-      const m = manifest[id];
+    for (const [id, m] of Object.entries(manifest.characters || manifest)) {
+      if (!m.sheet) continue;
       const img = new Image();
-      const p = new Promise(ok => { img.onload = ok; img.onerror = ok; });
+      const p = new Promise(ok => { img.onload = ok; img.onerror = () => { this.errors.push(m.sheet); ok(); }; });
       img.src = base + m.sheet;
       jobs.push(p);
       this.chars[id] = { img, scale: m.scale || 1, clips: m.clips || {}, anchor: m.anchor || 'feet' };
     }
+    for (const [id, m] of Object.entries(manifest.stages || {})) {
+      if (!m.image) continue;
+      const img = new Image();
+      jobs.push(new Promise(ok => { img.onload = ok; img.onerror = () => { this.errors.push(m.image); ok(); }; }));
+      img.src = base + m.image;
+      this.stages[id] = { img, ...m };
+    }
     await Promise.all(jobs);
     this.loaded = true;
     console.log('[assets] 已加载精灵图:', Object.keys(this.chars).join(', '));
+    return true;
+  }
+
+  drawStage(ctx, id, camX) {
+    const s = this.stages[id];
+    if (!s?.img.naturalWidth) return false;
+    const scale = s.scale || 224 / s.img.height;
+    const width = s.img.width * scale;
+    ctx.fillStyle = '#080b14'; ctx.fillRect(0, 0, 320, 224);
+    const offset = Math.max(0, width - 320) * Math.max(0, Math.min(1, camX / 860));
+    ctx.drawImage(s.img, -offset, s.offsetY || 0, width, s.img.height * scale);
     return true;
   }
 
@@ -59,16 +79,16 @@ export class Assets {
     const frames = clip.frames;
     if (!frames || !frames.length) return false;
 
-    const t = f.moveId ? f.mframe : f.aframe;
+    const t = key === f.moveId ? f.mframe : f.aframe;
     const step = Math.floor(t * (clip.fps || 12) / 60);
     const idx = clip.loop ? step % frames.length : Math.min(step, frames.length - 1);
-    const [sx, sy, sw, sh] = frames[idx];
+    const [sx, sy, sw, sh, anchorX = sw / 2, anchorY = sh] = frames[idx];
     const s = c.scale;
 
     ctx.save();
     ctx.translate(Math.round(f.x - camX), Math.round(f.y - f.z));
     ctx.scale(f.facing, 1);
-    ctx.drawImage(c.img, sx, sy, sw, sh, -sw * s / 2, -sh * s, sw * s, sh * s);
+    ctx.drawImage(c.img, sx, sy, sw, sh, -anchorX * s, -anchorY * s, sw * s, sh * s);
     ctx.restore();
     return true;
   }

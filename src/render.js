@@ -15,8 +15,8 @@ export function shade(hex, amt) {
 // ——— 调色板 ———
 export const PALETTES = {
   kyo: {
-    skin:'#e8ab7c', skinD:'#c2825a', hair:'#221a19', coat:'#1d2952', coat2:'#131c3a', trim:'#e0342a',
-    shirt:'#f2f5fb', pants:'#26304d', shoe:'#12172a', glove:'#d99d6e', aura:'#ff7a18', aura2:'#ffd24a',
+    skin:'#e8ab7c', skinD:'#c2825a', hair:'#221a19', coat:'#222534', coat2:'#11141f', trim:'#f6f0dd',
+    shirt:'#f2f5fb', pants:'#242735', shoe:'#7a482d', glove:'#24232b', aura:'#ff7a18', aura2:'#ffd24a',
   },
   kyo2: {
     skin:'#e8ab7c', skinD:'#c2825a', hair:'#3a2a1c', coat:'#57202a', coat2:'#3a1220', trim:'#f0c040',
@@ -24,14 +24,14 @@ export const PALETTES = {
   },
   iori: {
     skin:'#eec39d', skinD:'#c99a72', hair:'#b0202c', coat:'#17181f', coat2:'#0c0d12', trim:'#8f1c26',
-    shirt:'#262936', pants:'#6d1424', shoe:'#0b0c11', glove:'#e0b189', aura:'#a83cff', aura2:'#f0b0ff',
+    shirt:'#f4eee4', pants:'#a82b36', shoe:'#0b0c11', glove:'#e0b189', aura:'#a83cff', aura2:'#f0b0ff',
   },
   iori2: {
     skin:'#eec39d', skinD:'#c99a72', hair:'#2b2b33', coat:'#232735', coat2:'#161923', shirt:'#2f3446',
     trim:'#2f8f66', pants:'#1d5040', shoe:'#0d0f16', glove:'#e0b189', aura:'#2ee08a', aura2:'#c6ffe6',
   },
   terry: {
-    skin:'#eab183', skinD:'#c4885c', hair:'#e8c352', coat:'#7a1c1c', coat2:'#571212', trim:'#f2d24a',
+    skin:'#eab183', skinD:'#c4885c', hair:'#e8c352', coat:'#ce3439', coat2:'#8e1928', trim:'#dc373d',
     shirt:'#e8e2d4', pants:'#2a4a86', shoe:'#f0efe8', glove:'#e8e2d4', aura:'#ffcc33', aura2:'#fff2b0',
   },
   terry2: {
@@ -93,6 +93,15 @@ const add = (p, q, s = 1) => [p[0] + q[0] * s, p[1] + q[1] * s];
 
 // ——— 角色主体 ———
 export function drawFighter(ctx, f, pose, opt = {}) {
+  if (f.state === 'idle' && !f.moveId && f.charId) {
+    const bob = Math.sin((f.aframe || 0) * .08) * .65;
+    const stances = {
+      kyo: { eF:[15,62], hF:[22,73], eB:[-12,55], hB:[-3,61], ftF:[19,0], ftB:[-17,0] },
+      iori: { hip:[-2,42], chest:[7,62], head:[13,78+bob], eF:[20,50], hF:[27,37], eB:[-12,50], hB:[-18,39], ftF:[21,0], ftB:[-19,0] },
+      terry: { eF:[15,61], hF:[19,75], eB:[-10,57], hB:[-2,69], ftF:[18,0], ftB:[-18,0] },
+    };
+    pose = { ...pose, ...stances[f.charId] };
+  }
   const P = PALETTES[f.paletteName] || PALETTES.kyo;
   let flash = opt.flash || 0;
   if (flash < 0.06) flash = 0;
@@ -108,7 +117,8 @@ export function drawFighter(ctx, f, pose, opt = {}) {
   const coat = col(P.coat), coat2 = col(P.coat2), pants = col(P.pants);
   const shoe = col(P.shoe), shirt = col(P.shirt), hair = col(P.hair);
   const trim = col(P.trim), glove = col(P.glove);
-  const sleeveless = f.outfit === 'sleeveless';
+  const sleeveless = f.outfit === 'vest';
+  const isIori = f.outfit === 'ioriJacket';
   const armCol = sleeveless ? skin : coat;
   const armHi = sleeveless ? shade(skin, .22) : shade(coat, .3);
   const armSd = sleeveless ? shade(skin, -.25) : shade(coat, -.3);
@@ -129,6 +139,13 @@ export function drawFighter(ctx, f, pose, opt = {}) {
   const lB  = [hip[0] + nx * (WA - 1.2), hip[1] + ny * (WA - 1.2)];
   const lF  = [hip[0] - nx * (WA - 1.2), hip[1] - ny * (WA - 1.2)];
 
+  // Character-specific silhouette: shirt tails and the trouser strap move with the skeleton.
+  if (isIori) {
+    poly(ctx, [[hip[0]-8,hip[1]+8],[hip[0]+7,hip[1]+8],[hip[0]+9,hip[1]-18],[hip[0]-11,hip[1]-20]], shirt);
+    ctx.strokeStyle = trim; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(...pose.kB);
+    ctx.quadraticCurveTo((pose.kB[0]+pose.kF[0])/2, Math.min(pose.kB[1],pose.kF[1])-11, ...pose.kF); ctx.stroke();
+  }
   // ═══ 后腿 ═══
   limb(ctx, lB, pose.kB, 6.6, 5.2, shade(pants, -.3), null, shade(pants, -.45));
   limb(ctx, pose.kB, pose.ftB, 5.2, 3.6, shade(pants, -.3), null, shade(pants, -.45));
@@ -136,7 +153,7 @@ export function drawFighter(ctx, f, pose, opt = {}) {
 
   // ═══ 后臂 ═══
   limb(ctx, jB, pose.eB, 5.6, 4.4, shade(armCol, -.25), null, shade(armCol, -.4));
-  limb(ctx, pose.eB, pose.hB, 4.4, 3.6, sleeveless ? shade(skin, -.25) : shade(skinD, -.1), null, null);
+  limb(ctx, pose.eB, pose.hB, 4.4, 3.6, sleeveless ? shade(skin, -.25) : shade(coat, -.25), null, null);
   ctx.beginPath(); ctx.arc(pose.hB[0], pose.hB[1], 4.2, 0, 6.284);
   ctx.fillStyle = shade(glove, -.22); ctx.fill(); ctx.strokeStyle = OUT; ctx.lineWidth = 1.4; ctx.stroke();
 
@@ -191,7 +208,7 @@ export function drawFighter(ctx, f, pose, opt = {}) {
 
   // ═══ 前臂 ═══
   limb(ctx, jF, pose.eF, 6.0, 4.8, armCol, armHi, armSd);
-  limb(ctx, pose.eF, pose.hF, 4.8, 4.0, sleeveless ? skin : skin, shade(skin, .2), skinD);
+  limb(ctx, pose.eF, pose.hF, 4.8, 4.0, sleeveless ? skin : coat, sleeveless ? shade(skin, .2) : shade(coat, .25), sleeveless ? skinD : coat2);
   ctx.beginPath(); ctx.arc(pose.hF[0] + .6, pose.hF[1], 4.6, 0, 6.284);
   ctx.fillStyle = glove; ctx.fill(); ctx.strokeStyle = OUT; ctx.lineWidth = 1.4; ctx.stroke();
   ctx.beginPath(); ctx.arc(pose.hF[0] - .4, pose.hF[1] + 1.4, 2, 0, 6.284);
@@ -240,8 +257,8 @@ function drawHead(ctx, pose, f, C) {
   if (f.hairStyle === 'long') {
     // 长发：后披 + 遮住半张脸的刘海
     poly(ctx, [
-      [-R * .2, R * 1.05], [-R * 1.35, R * .5], [-R * 1.55, -R * 1.2], [-R * 1.15, -R * 3.0],
-      [-R * .55, -R * 2.2], [-R * .45, -R * .4], [-R * .1, R * .3],
+      [-R * .2, R * 1.05], [-R * 1.35, R * .5], [-R * 1.55, -R * 1.2], [-R * 1.15, -R * 1.25],
+      [-R * .55, -R * .9], [-R * .45, -R * .4], [-R * .1, R * .3],
     ], C.hair);
     poly(ctx, [
       [-R * 1.18, R * .35], [-R * .95, R * 1.35], [R * .05, R * 1.55], [R * .95, R * 1.05],
@@ -269,6 +286,13 @@ function drawHead(ctx, pose, f, C) {
     }
   }
 
+  if (f.outfit === 'jacket') {
+    poly(ctx, [[-R*.95,R*.38],[R*.85,R*.38],[R*.9,R*.65],[-R,R*.68]], '#f4efe3', false);
+  }
+  if (f.cap) {
+    ctx.fillStyle = '#fff5e5'; ctx.fillRect(-1, R*.7, 4, 2);
+    poly(ctx, [[-R,R*.2],[-R*1.7,-R*.5],[-R*1.5,-R*1.6],[-R*.8,-R]], '#e8c352');
+  }
   if (!f.eyesClosed) {
     // 眉
     ctx.strokeStyle = shade(C.hair, .05);

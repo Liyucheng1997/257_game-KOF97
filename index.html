@@ -2,74 +2,25 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>拳皇 97 · 风云再起 (KOF'97 Fan Engine)</title>
-<style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  html,body {
-    width:100%; height:100%; background:#000; overflow:hidden;
-    font-family: "Microsoft YaHei", "PingFang SC", monospace;
-    color:#fff; user-select:none; -webkit-tap-highlight-color:transparent;
-  }
-  #wrap {
-    position:absolute; inset:0; display:flex;
-    align-items:center; justify-content:center;
-    background: radial-gradient(ellipse at 50% 40%, #171b26 0%, #05060a 75%);
-  }
-  #screen {
-    image-rendering: pixelated;
-    image-rendering: crisp-edges;
-    box-shadow: 0 0 0 2px #1c2030, 0 0 60px rgba(60,90,160,.35), 0 24px 70px rgba(0,0,0,.8);
-    background:#000;
-  }
-  #boot {
-    position:absolute; inset:0; display:flex; flex-direction:column;
-    align-items:center; justify-content:center; gap:18px; z-index:20;
-    background:rgba(0,0,0,.92); text-align:center;
-  }
-  #boot h1 {
-    font-size:34px; letter-spacing:6px; font-weight:900;
-    background:linear-gradient(180deg,#fff 0%,#ffd34d 45%,#e0430f 100%);
-    -webkit-background-clip:text; background-clip:text; color:transparent;
-    text-shadow:0 0 24px rgba(255,120,0,.35);
-  }
-  #boot p { font-size:13px; color:#9aa3b8; line-height:1.9; }
-  #boot kbd {
-    background:#232838; border:1px solid #3a4258; border-bottom-width:2px;
-    border-radius:4px; padding:1px 6px; font-size:12px; color:#e6ecff;
-  }
-  #boot button {
-    margin-top:6px; padding:12px 44px; font-size:16px; font-weight:800; letter-spacing:3px;
-    color:#1a1005; cursor:pointer; border:none; border-radius:3px;
-    background:linear-gradient(180deg,#ffe08a,#f0a11c 60%,#c96a06);
-    box-shadow:0 3px 0 #7a3f02, 0 8px 24px rgba(255,140,0,.35);
-  }
-  #boot button:active { transform:translateY(2px); box-shadow:0 1px 0 #7a3f02; }
-  #hint { position:absolute; left:10px; bottom:8px; font-size:11px; color:#4c5468; z-index:5; }
-</style>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101216">
+<meta name="application-version" content="1.1.0">
+<title>拳皇97 · 风云再起 v1.1 / Arcade Studio</title>
+<link rel="stylesheet" href="./src/shell.css">
 </head>
 <body>
-  <div id="wrap">
-    <canvas id="screen" width="320" height="224"></canvas>
-    <div id="hint">F1 训练模式判定框 &nbsp;·&nbsp; F2 全屏 &nbsp;·&nbsp; F5 重开</div>
-  </div>
-
-  <div id="boot">
-    <h1>拳 皇 97</h1>
-    <p style="color:#cfd6e8;font-size:15px;letter-spacing:4px;margin-top:-8px;">THE KING OF FIGHTERS &nbsp;·&nbsp; 风云再起</p>
-    <p>
-      <b style="color:#ffd34d">1P</b>&nbsp;
-      移动 <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> &nbsp;
-      轻拳 <kbd>J</kbd> 轻脚 <kbd>K</kbd> 重拳 <kbd>U</kbd> 重脚 <kbd>I</kbd><br>
-      <b style="color:#7fb3ff">2P</b>&nbsp;
-      移动 <kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd> &nbsp;
-      轻拳 <kbd>1</kbd> 轻脚 <kbd>2</kbd> 重拳 <kbd>4</kbd> 重脚 <kbd>5</kbd>（小键盘）<br>
-      <span style="color:#7d8699">轻拳+轻脚 = 翻滚 / 受身&nbsp;&nbsp;·&nbsp;&nbsp;重拳+重脚 = 吹飞攻击&nbsp;&nbsp;·&nbsp;&nbsp;轻拳+轻脚+重拳 = MAX 爆气</span>
-    </p>
-    <button id="startBtn">START</button>
-    <p style="font-size:11px;color:#5a6274;margin-top:4px;">同人自制引擎 · 非商用 · 无原版美术素材</p>
-  </div>
-
-  <script type="module" src="./src/main.js"></script>
-</body>
-</html>
+<header class="topbar"><a class="brand" href="./"><span class="brand-icon">97</span><span>THE KING OF FIGHTERS<small>风云再起 · 同人重制实验室</small></span></a><span class="edition">VERSION 1.1 <b>● SYSTEM ONLINE</b></span><button id="helpBtn" class="quiet">操作指南 <kbd>Tab</kbd></button></header>
+<main>
+<section id="lobby">
+<div class="eyebrow"><span></span> THE TOURNAMENT BEGINS AGAIN / 1997</div>
+<div class="lobby-heading"><div><h1>宿命，再次燃烧<span>SELECT YOUR FIGHTER.</span></h1><p>三位格斗家，三座舞台。把胜负交给你的下一招。</p></div><div class="chapter">01 <span>/ SELECT</span></div></div>
+<div class="lobby-grid"><div class="roster-area"><div class="section-label"><span id="selectLabel">01 / 选择你的格斗家</span><span id="selectionHint">PLAYER 1</span></div><div id="roster" class="roster"></div><div class="section-label stages-label"><span>02 / 选择对战舞台</span><span>Q / E 切换</span></div><div id="stages" class="stages"></div></div>
+<aside class="setup"><div class="section-label">MATCH SETUP <span>対戦設定</span></div><label for="mode">对战模式</label><select id="mode"><option value="0">街机对战 · 标准 CPU</option><option value="1">街机对战 · 高手 CPU</option><option value="2">本地双人 · PLAYER VS PLAYER</option><option value="3">训练道场 · 无限能量</option></select><div class="versus"><div><span class="tag">1P</span><strong id="p1Name">草薙 京</strong></div><i>VS</i><div><span class="tag blue">RIVAL</span><strong id="p2Name">八神 庵</strong></div></div><div id="fighterDetail" class="fighter-detail"></div><button id="startBtn" class="primary">确认格斗家 <span>→</span></button><button id="backBtn" class="quiet">重新选择 1P</button><p class="setup-note">A / D 选人 · W / S 选模式 · J 确定<br>也可以直接点击角色与舞台。</p></aside></div>
+<div class="lobby-footer"><span><b>60</b> FPS FIXED STEP</span><span>ADVANCED / 翻滚 · 小跳 · 必杀取消</span><span>03 FIGHTERS / 03 STAGES</span></div>
+</section>
+<section id="arena" hidden><div class="arena-heading"><div><span class="eyebrow">LIVE MATCH</span><h2 id="matchTitle">KYO VS IORI</h2></div><div class="arena-actions"><button id="pauseBtn" class="quiet">暂停 <kbd>Esc</kbd></button><button id="movesBtn" class="quiet">出招表 <kbd>Tab</kbd></button><button id="returnBtn" class="quiet">返回选人</button></div></div><div id="wrap"><canvas id="screen" width="320" height="224" tabindex="0" aria-label="拳皇97格斗对战画面"></canvas><div id="pauseOverlay" hidden><span>PAUSED</span><p>按 Esc 或点击“继续”恢复对战</p></div></div><div id="trainingBar" hidden><strong>训练道场</strong><label>木桩 <select id="dummy"><option value="stand">站立</option><option value="crouch">蹲下</option><option value="guard">自动防御</option></select></label><button id="resetBtn" class="quiet">重置位置 <kbd>R</kbd></button><label><input id="boxes" type="checkbox"> 判定框</label><output id="inputHistory"></output></div><div class="controls-strip"><span><b>MOVE</b> W A S D</span><span><b>PUNCH</b> J / U</span><span><b>KICK</b> K / I</span><span><b>ROLL</b> J + K</span><span><b>MAX</b> J + K + U</span><span>F2 全屏 · F3 音乐</span></div></section>
+</main>
+<footer class="footer"><span>THE KING OF FIGHTERS ’97 <b>风云再起</b></span><span>同人引擎 · 程序美术 · 非原版逐帧复刻</span></footer>
+<dialog id="guide"><div class="dialog-top"><span class="eyebrow">FIGHTER MANUAL</span><button id="closeGuide" class="quiet" aria-label="关闭出招表">关闭 ×</button></div><h2>把每一招，打到实处。</h2><p>方向以面向对手为准。P = J / U，K = K / I。超必杀消耗一格气。</p><div id="moveList"></div><div class="manual-basics">防御：按住后方向，下段需蹲防。轻点 W 小跳，按住 W 大跳；前前冲刺，后后后跃。<br>J + K 翻滚，U + I 吹飞，J + K + U 爆气。2P 使用方向键和小键盘 1 / 2 / 4 / 5。</div><p class="accuracy-note">当前招式动画与判定仍为自制近似，扩展技在表中单独标注。</p></dialog>
+<script type="module" src="./src/main.js"></script>
+</body></html>

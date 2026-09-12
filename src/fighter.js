@@ -296,7 +296,7 @@ export class Fighter {
   }
 
   // 指令复杂的招式必须先判定：623 的轨迹里天然包含 236，若先查 236 就永远出不了升龙
-  static PRIO = { DPx2: 6, QCFx2: 5, QCBx2: 5, HCF: 4, HCB: 4, DP: 3, RDP: 3, QCB: 2, QCF: 2, DD: 1 };
+  static PRIO = { QCBHCF: 7, QCFHCB: 7, GEYSER: 6, DPx2: 6, QCFx2: 5, QCBx2: 5, HCF: 4, HCB: 4, DP: 3, RDP: 3, QCB: 2, QCF: 2, DD: 1 };
   specialKeys() {
     const c = this.char;
     if (!c._spOrder) {

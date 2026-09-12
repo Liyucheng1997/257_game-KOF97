@@ -277,7 +277,7 @@ export const CHARACTERS = {
       }),
       // 大蛇薙 (QCF,HCB + P) —— 地面火焰奔流 DM
       orochinagi: mv({
-        type: 'dm', motion: 'QCFx2', btn: 'P', cost: 1, superFreeze: 34,
+        type: 'dm', motion: 'QCBHCF', btn: 'P', cost: 1, superFreeze: 34,
         startup: 22, active: 26, recovery: 34, meter: 0, sfx: 'super',
         anim: { keys: [[0, 'dmCharge'], [12, 'dmCharge'], [22, 'fireCast'], [40, 'fireCast'], [48, 'strongWind'], [82, 'idle']] },
         hits: [{ f: [22, 47], box: B(6, 0, 92, 52), dmg: 34, stun: 30, bstun: 20, hitstop: 16, power: 2, chip: 5,
@@ -287,7 +287,7 @@ export const CHARACTERS = {
       }),
       // 無式 (QCF,QCB + P) —— 突进 DM
       mushiki: mv({
-        type: 'dm', motion: 'QCBx2', btn: 'P', cost: 1, superFreeze: 30,
+        type: 'dm', motion: 'QCFx2', btn: 'P', cost: 1, superFreeze: 30,
         startup: 10, active: 6, recovery: 40, meter: 0, sfx: 'super',
         anim: { keys: [[0, 'dmCharge'], [10, 'strongHit'], [16, 'strongHit'], [26, 'win'], [56, 'idle']] },
         hits: [{ f: [10, 15], box: B(10, 30, 46, 44), dmg: 40, stun: 40, bstun: 22, hitstop: 22, power: 2, chip: 6,
@@ -299,7 +299,7 @@ export const CHARACTERS = {
   },
 
   iori: {
-    id: 'iori', name: 'IORI', cn: '八神 庵', palette: 'iori', palette2: 'iori2', hairStyle: 'long', outfit: 'sleeveless',
+    id: 'iori', name: 'IORI', cn: '八神 庵', palette: 'iori', palette2: 'iori2', hairStyle: 'long', outfit: 'ioriJacket',
     color: '#a83cff',
     quote: '死ね……',
     intro: '紫炎焚身',
@@ -325,7 +325,7 @@ export const CHARACTERS = {
         inv: [0, 5, 'full'],
         airborne: [4, 32],
       }),
-      // 外式・轟斧 陽 (QCB + P) —— 三段连打
+      // 百弐拾七式・葵花 (QCB + P) —— 三段连打
       rekka1: mv({
         type: 'special', motion: 'QCB', btn: 'P', startup: 8, active: 4, recovery: 20, meter: 5, sfx: 'claw',
         cancel: ['dm'], cancelable: 'hit',
@@ -350,14 +350,14 @@ export const CHARACTERS = {
       }),
       // 屑風 (HCB + K) —— 投技系
       kuzukaze: mv({
-        type: 'throw', motion: 'HCB', btn: 'K', startup: 6, active: 3, recovery: 34, meter: 8, sfx: 'grab',
+        type: 'throw', motion: 'HCB', btn: 'P', startup: 6, active: 3, recovery: 34, meter: 8, sfx: 'grab',
         anim: { keys: [[0, 'grabWind'], [6, 'grabWind'], [14, 'clawSwipe'], [26, 'dmBurst'], [43, 'idle']] },
         hits: [{ f: [6, 8], box: B(4, 20, 34, 64), dmg: 16, hitstop: 16, knockdown: true, fx: 'throw', pushEnemy: 5 }],
         moves: [[2, 6, 2.0, 0]],
       }),
       // 禁千弐百拾壱式・八稚女 (QCF,HCB + P) —— 乱舞 DM
       yaotome: mv({
-        type: 'dm', motion: 'QCFx2', btn: 'P', cost: 1, superFreeze: 32,
+        type: 'dm', motion: 'QCFHCB', btn: 'P', cost: 1, superFreeze: 32,
         startup: 6, active: 4, recovery: 46, meter: 0, sfx: 'super',
         anim: { keys: [[0, 'dmCharge'], [6, 'clawSwipe'], [10, 'clawSwipe'], [18, 'dmBurst'], [40, 'dmBurst'], [56, 'idle']] },
         hits: [{ f: [6, 9], box: B(8, 24, 40, 50), dmg: 6, stun: 60, bstun: 20, hitstop: 20, power: 2, chip: 4,
@@ -436,7 +436,7 @@ export const CHARACTERS = {
       }),
       // Power Geyser (QCB,DB,F + P) —— DM
       powerGeyser: mv({
-        type: 'dm', motion: 'QCBx2', btn: 'P', cost: 1, superFreeze: 32,
+        type: 'dm', motion: 'GEYSER', btn: 'P', cost: 1, superFreeze: 32,
         startup: 14, active: 22, recovery: 36, meter: 0, sfx: 'super',
         anim: { keys: [[0, 'dmCharge'], [14, 'sweep'], [26, 'dmBurst'], [40, 'dmBurst'], [72, 'idle']] },
         hits: [{ f: [14, 35], box: B(4, 0, 64, 106), dmg: 33, stun: 30, bstun: 20, hitstop: 16, power: 2, chip: 5,
